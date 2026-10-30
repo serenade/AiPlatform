@@ -1,0 +1,52 @@
+services:
+  api:
+    build: apps/api
+    environment:
+      - PORT=4000
+      - DB_PATH=/data/platform.db
+      - APP_DATA_DIR=/data/appdata
+      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL:-admin@air.local}
+      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD:-12345678}
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN:-dev-internal-token}
+    volumes:
+      - api-data:/data
+    ports:
+      - '4000:4000'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:4000/api/health']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  agent-server:
+    build: agent-server
+    environment:
+      - PORT=8100
+      - AGENT_DB_PATH=/data/agent.db
+      - PLATFORM_API_URL=http://api:4000
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN:-dev-internal-token}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-}
+      - LLM_MOCK=${LLM_MOCK:-auto}
+    volumes:
+      - agent-data:/data
+    ports:
+      - '8100:8100'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  web:
+    build: apps/web
+    environment:
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+      - agent-server
+
+volumes:
+  api-data: {}
+  agent-data: {}

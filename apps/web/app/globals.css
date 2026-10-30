@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+:root {
+  --brand: #4f46e5;
+}
+
+/* 细滚动条，贴近原版工作台风格 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
